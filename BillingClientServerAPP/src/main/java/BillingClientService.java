@@ -4,6 +4,7 @@ import java.io.IOException;
 
 /**
  * Created by Aleksandr_Ivanov1 on 5/15/2017.
+ *
  */
 public class BillingClientService extends Thread {
     DataInputStream inputData;
@@ -38,6 +39,12 @@ public class BillingClientService extends Thread {
                         getCardBalance();
                         break;
                     }
+                    case MyStoreServer.EXIT_CLIENT: {
+                        System.out.println("Connection closed");
+                        closeConnection = true;
+                        break;
+                    }
+                    default:
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -49,18 +56,21 @@ public class BillingClientService extends Thread {
         String personName = inputData.readUTF();
         String card = inputData.readUTF();
         myStoreServer.addNewCard(personName, card);
+        System.out.println("Adding new card " + card + " from " + personName);
     }
 
     private void addMoney() throws IOException {
         String card = inputData.readUTF();
         double money = inputData.readDouble();
         myStoreServer.addMoney(card, money);
+        System.out.println("Adding " + money +" money to card " + card);
     }
 
     private void subMoney() throws IOException {
         String card = inputData.readUTF();
         double money = inputData.readDouble();
         myStoreServer.subMoney(card, money);
+        System.out.println("Subdividing " + money +" money from card " + card);
     }
 
     private void getCardBalance() throws IOException {
@@ -68,5 +78,6 @@ public class BillingClientService extends Thread {
         String card = inputData.readUTF();
         balance = myStoreServer.getCardBalance(card);
         outputData.writeDouble(balance);
+        System.out.println("Getting card " + card + " balance");
     }
 }
