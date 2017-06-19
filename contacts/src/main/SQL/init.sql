@@ -1,0 +1,3 @@
+insert into contacts (id, firstName, lastName, phoneNumber, emailAddress) values ('1', 'USER1', 'USER1', 'USER1_PHONE', 'USER1_ADDRESS');
+insert into contacts (id, firstName, lastName, phoneNumber, emailAddress) values ('2', 'USER2', 'USER2', 'USER2_PHONE', 'USER2_ADDRESS');
+insert into contacts (id, firstName, lastName, phoneNumber, emailAddress) values ('3', 'USER3', 'USER3', 'USER3_PHONE', 'USER3_ADDRESS');
