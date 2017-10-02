@@ -35,6 +35,7 @@ public class MyClass {
         nonStaticObject2 = nonStaticObject1;
         println(nonStaticObject2);
         println(nonStaticObject1);
+
         nonStaticObject1.b = 7;
         println(nonStaticObject2);
         println(nonStaticObject1);
