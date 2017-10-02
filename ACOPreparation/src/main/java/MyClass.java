@@ -4,6 +4,7 @@ import static java.lang.System.out;
 
 /**
  * Created by Alexandr on 23.09.2017.
+ *
  */
 public class MyClass {
     static {
@@ -39,12 +40,12 @@ public class MyClass {
         println(nonStaticObject1);
     }
 
-    static void changeString(String str) {
+    private static void changeString(String str) {
         str = "bbb";
         println(str);
     }
 
-    static void println(Object str) {
+    private static void println(Object str) {
         out.println(str);
     }
     static void print(Object str) {

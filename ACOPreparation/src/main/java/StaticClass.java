@@ -1,5 +1,6 @@
 /**
- * Created by Alexandr on 24.09.2017.
+ * Created by
+ * @author Alexandr on 24.09.2017.
  */
 public class StaticClass implements ExperimentalObject{
     static protected int x = 3;
