@@ -8,12 +8,18 @@
 #define LCD_GSM_INFO_COL 0
 #define LCD_RF_STATE_COL 12
 #define LCD_RF_DATA_COL 6
-#define GSM_FREQ 115700
+#define GSM_FREQ 115200
 #define RADIO_TX_PIN 12
 #define RADIO_RX_PIN 11
 #define RADIO_FREG 2000
+#define GSM_RATE 2400
+#define SMS_TX_PIN 3
+#define SMS_RX_PIN 10
+#define SMS_LENGTH 160
+#define PHONE_LENGTH 20
 
-#include <GSM.h>
+//#include <GSM.h>
+#include "sms.h"
 #include <EEPROM.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -22,8 +28,8 @@
 #include <SPI.h>
 
 //GSM
-GSM gsmAccess;
-GSM_SMS gsm(true);
+//GSM gsmAccess;
+GSM gsm;
 
 //radio
 RH_ASK driver(RADIO_FREG, RADIO_RX_PIN, RADIO_TX_PIN);
@@ -111,22 +117,44 @@ void loop() {
   }
   // WORK STATE // works like a client: send request get response
   else {
-    if (hasSMS()) {
+	  int position = hasSMS();
+    if (position) {
       Serial.println("----------====<<<<< GET SMS >>>>>====----------");
-      const uint8_t phone_length = 20;
-      char phone[phone_length];
-      getSMS(phone, phone_length);
+	  
+      char phone[PHONE_LENGTH];
+      char in_sms_text[SMS_LENGTH];
+      char out_sms_text[SMS_LENGTH];
+      getSMS(position, phone, in_sms_text);
+	  
       uint8_t device_states[MAX_DEVICES];
       memset(device_states, MAX_DEVICES, 0);
       int devicesCount = quiz_devices(device_states);
-      char *text = prepare_sms_text(device_states, devicesCount);
+	  
+      int num_symbols_in_sms = prepare_out_sms_text(out_sms_text, device_states, devicesCount);
       Serial.print("text sms = ");
-      Serial.println(text);
-      int errorSendSMS = sendSMS("I love you", phone);
+      Serial.println(out_sms_text);
+	  Serial.print("num of symbols in sms = ");
+      Serial.println(num_symbols_in_sms);
+	  
+	  sendSMS(phone, out_sms_text);
       Serial.println("----------====<<<<< DEVICES ARE CHECKED >>>>>====----------");
     }
     delay(1000);
   }
+}
+
+int hasSMS() {
+	return gsm.IsSMSPresent(SMS_UNREAD);		
+}
+
+void getSMS(int position, char *phone, char* sms_text) {
+	if (position > 0 && position <= 20) {
+		gsm.GetSMS((byte)position, phone, sms_text, SMS_LENGTH);
+		Serial.println(phone);
+		// Delete message from modem memory
+		gsm.DeleteSMS(position);
+		Serial.println("MESSAGE DELETED");
+	}
 }
 
 int quiz_devices(uint8_t *device_states) {
@@ -162,63 +190,40 @@ int quiz_devices(uint8_t *device_states) {
   return counter;
 }
 
-char* prepare_sms_text(char* device_states, int device_count) {
-  String text_sms = "!";
-
+int prepare_out_sms_text(char* sms_text, char* device_states, int device_count) {
   if (device_count != 0) {
-    for (int i = 0; i < device_count; i++) {
-      text_sms += "D";
-      text_sms += (i + 1);
-      text_sms += "=";
-      text_sms += data[i];
-      text_sms += "\n";
-      text_sms.trim();
-    }
-    //    const int text_sms_length = text_sms.length();
-    //    char text[text_sms_length];
-    //    return text_sms.toCharArray(text, text_sms_length);
+	int symbol_position = 0;
+	for (int i = 0; i < device_count; i++) {
+	  sms_text[symbol_position] = 'D';
+	  symbol_position++;
+	  int divide = 100;
+	  int elder_position_number = 0;
+	  for(int j=0; j<3; j++) {
+		  elder_position_number = (int) (i / divide) - (elder_position_number * divide);
+		  sms_text[symbol_position] = (char) elder_position_number;		  
+		  symbol_position++;
+		  divide /=10; 
+	  }
+	  sms_text[symbol_position] = '=';
+	  symbol_position++;
+	  sms_text[symbol_position] = device_states[i];
+	  symbol_position++;
+	  sms_text[symbol_position] = '\n';
+	  symbol_position++;
+	}
   } else {
-    text_sms = "Error 0: No devices found";
+    sms_text = "Error 0: No devices found";
   }
-  const int text_sms_length = text_sms.length();
-  char text[text_sms_length];
-  text_sms.toCharArray(text, text_sms_length);
-  return text;
+  return symbol_position - 1;
 }
 
-int sendSMS(const String &text, char *phone) {
-  Serial.println("SMS send started");
-  uint8_t counter = 0;
-  uint8_t num_of_effort = 3;
-  uint8_t commandError;
-  // 3 efforts for sending sms
-  while (counter++ < num_of_effort && ((commandError = gsm.beginSMS(phone)) != 1));
-  if (counter == num_of_effort + 1) return commandError;
-  for (uint8_t i = 0; i < text.length(); i++) {
-    gsm.write(text.charAt(i));
+void sendSMS(char* phone, char* sms_text) {
+  Serial.println("SMS send has been started");
+  if(gsm.SendSMS(phone, sms_text)) {
+	  Serial.println("SMS send has been finished");
+  } else {
+	  Serial.println("There is an ERROR while sending sms");
   }
-  commandError = gsm.endSMS();
-  Serial.println("SMS send finish");
-  Serial.println("ErrorCommand = " + commandError);
-  return commandError;
-}
-
-boolean hasSMS() {
-  return gsm.available() == 1;
-}
-
-void getSMS(char *phone, uint8_t phone_length) {
-  gsm.remoteNumber(phone, phone_length);
-  Serial.println(phone);
-  //  String phone = String(senderNumber);
-  // Read message bytes and print them
-  //  char next_symbol;
-  //  while (next_symbol = sms.read()) {
-  //    Serial.print(next_symbol);
-  //  }
-  // Delete message from modem memory
-  gsm.flush();
-  Serial.println("MESSAGE DELETED");
 }
 
 void serialPrint(String msg, int data) {
@@ -306,19 +311,10 @@ void prepareData(uint8_t device_number) {
 }
 
 void gsm_init() {
-#ifdef __AVR_ATmega2560__
-   Serial.println("__AVR_ATmega2560__");
-   #else
-    Serial.println("NO __AVR_ATmega2560__");
-#endif
-  //  Serial.print("__RXPIN__");
-  //  Serial.println(__RXPIN__);
-  //  Serial.print("__TXPIN__");
-  //  Serial.println(__TXPIN__);
   boolean notConnected = true;
   while (notConnected) {
     Serial.println("SMS Messages Sender");
-    if (gsmAccess.begin("", false, true) == GSM_READY) {
+    if (gsm.begin(GSM_RATE 2400)) {
       notConnected = false;
     } else {
       Serial.println("Not connected");
