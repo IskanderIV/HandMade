@@ -36,9 +36,9 @@ RHReliableDatagram manager(driver, BAZA_ADDRESS);
 
 //button
 int btn_Search_Remember = 0;
-int btn_get_SMS = 0;
+// int btn_get_SMS = 0;
 const int btn_Search_Remember_Pin = 5;
-const int btn_get_SMS_Pin = 6;
+// const int btn_get_SMS_Pin = 6;
 
 // screen
 LiquidCrystal_I2C lcd(0xbf, LCD_COL_NUM, LCD_ROW_NUM);
@@ -54,6 +54,7 @@ void setup() {
 }
 
 void print_EEPROM() {
+	// Before using EEPROM should be filled by zeros
   Serial.print("Remember devices: ");
   for (int i = 0; i < MAX_DEVICES; i++) {
     Serial.print(EEPROM.read(i));
@@ -84,7 +85,7 @@ void loop() {
       if (manager.recvfromAck(buf, &len, &from)) {
         printMessageInSerial(buf, from);
         uint8_t device_number = 0;
-        for (uint8_t i = 0; i < MAX_DEVICES; i++) {
+        for (int i = 0; i < MAX_DEVICES; i++) {
           if ((device_number = EEPROM.read(i)) == 0) {
             Serial.println("No such device found");//TEST
             device_number = i + 1;
@@ -165,7 +166,7 @@ int quiz_devices(uint8_t *device_states) {
   prepareData(1);
   int counter = 0;
 
-  for (uint8_t i = 0; i < MAX_DEVICES; i++) {
+  for (int i = 0; i < MAX_DEVICES; i++) {
     uint8_t device_number = EEPROM.read(i);
     if (device_number == 0) {
       break;
@@ -206,14 +207,6 @@ int prepare_out_sms_text(char* sms_text, uint8_t* device_states, int device_coun
         sms_text[symbol_position] = device_count_Char[j];
         symbol_position++;
       }
-      // int divide = 100;
-      // int elder_position_number = 0;
-      // for (int j = 0; j < 3; j++) {
-      // elder_position_number = (int) (i / divide) - (elder_position_number * divide);
-      // sms_text[symbol_position] = (char) elder_position_number;
-      // symbol_position++;
-      // divide /= 10;
-      // }
       sms_text[symbol_position] = '=';
       symbol_position++;
       char device_state_Char[3];
@@ -281,7 +274,7 @@ void radio_init() {
 
 void readButtons() {
   btn_Search_Remember = digitalRead(btn_Search_Remember_Pin);
-  btn_get_SMS = digitalRead(btn_get_SMS_Pin);
+  // btn_get_SMS = digitalRead(btn_get_SMS_Pin);
 }
 
 void print_RF_on_lcd(String str) {
