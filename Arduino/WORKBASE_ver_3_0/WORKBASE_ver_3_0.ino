@@ -34,11 +34,11 @@ SMSGSM gsm_sms;
 RH_ASK driver(RADIO_FREG, RADIO_RX_PIN, RADIO_TX_PIN);
 RHReliableDatagram manager(driver, BAZA_ADDRESS);
 
-//button
+//buttons
 int btn_Search_Remember = 0;
-// int btn_get_SMS = 0;
+int btn_Gsm_Power = 0;
 const int btn_Search_Remember_Pin = 5;
-// const int btn_get_SMS_Pin = 6;
+const int btn_Gsm_Power_Pin = 13;
 
 // screen
 LiquidCrystal_I2C lcd(0xbf, LCD_COL_NUM, LCD_ROW_NUM);
@@ -47,10 +47,12 @@ void setup() {
   Serial.begin(9600);
   lcd_init();
   digital_pin_init();
-  radio_init();
-  gsm_init();
+  radio_init();  
   print_EEPROM();
-  delay(300);
+  gsm_power_on();
+  delay(5000);
+  gsm_init();
+  delay(3000);
 }
 
 void print_EEPROM() {
@@ -133,9 +135,9 @@ void loop() {
       uint8_t device_states[MAX_DEVICES];
       memset(device_states, MAX_DEVICES, 0);
       int devicesCount = quiz_devices(device_states);
-      Serial.print("after quiz_devices");
+      Serial.println("after quiz_devices");
       int num_symbols_in_sms = prepare_out_sms_text(out_sms_text, device_states, devicesCount);
-      Serial.print("after prepare_out_sms_text");
+      Serial.println("after prepare_out_sms_text");
       Serial.print("text sms = ");
       Serial.println(out_sms_text);
       Serial.print("num of symbols in sms = ");
@@ -258,7 +260,7 @@ void lcd_init() {
 
 void digital_pin_init() {
   pinMode(btn_Search_Remember_Pin, INPUT);
-  pinMode(btn_get_SMS_Pin, INPUT);
+//  pinMode(btn_get_SMS_Pin, INPUT);
   //  pinMode(pwr_Pin, OUTPUT);
   //  digitalWrite(pwr_Pin, true);
 }
@@ -319,6 +321,17 @@ void printMessageInSerial(uint8_t* buf, uint8_t from) {
 
 void prepareData(uint8_t device_number) {
   data[0] = device_number;
+}
+
+void gsm_power_on()
+{
+ pinMode(btn_Gsm_Power_Pin, OUTPUT); 
+ digitalWrite(btn_Gsm_Power_Pin,LOW);
+ delay(1000);
+ digitalWrite(btn_Gsm_Power_Pin,HIGH);
+ delay(2000);
+ digitalWrite(btn_Gsm_Power_Pin,LOW);
+ delay(3000);
 }
 
 void gsm_init() {
