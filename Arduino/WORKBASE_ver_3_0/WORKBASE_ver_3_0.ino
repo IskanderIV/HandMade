@@ -1,4 +1,5 @@
 //#define RH_ASK_ARDUINO_USE_TIMER2
+#define MY_DEBUG
 #define BAZA_ADDRESS 0
 #define MAX_DEVICES 255
 #define LCD_ROW_1 0
@@ -49,12 +50,33 @@ void setup() {
   digital_pin_init();
   radio_init();
   gsm_init();
+#ifdef MY_DEBUG
   print_EEPROM();
+#endif
+  clean_sms_memory();
   delay(300);
 }
 
+void clean_sms_memory() {
+  int position = 0;
+  // Delete all messages from modem memory
+  while (position = findSMS(SMS_ALL)) {
+    int result_of_deleting = gsm_sms.DeleteSMS(position);
+#ifdef MY_DEBUG
+    Serial.print("MESSAGE on position ");
+    Serial.print(result_of_deleting);
+    if (result_of_deleting > 0) {
+      Serial.println(" was really DELETED");
+    } else {
+      Serial.println(" was NOT really DELETED");
+    }
+#endif
+  }
+  Serial.println("MESSAGES WAS DELETED");
+}
+
 void print_EEPROM() {
-	// Before using EEPROM should be filled by zeros
+  // Before using EEPROM should be filled by zeros
   Serial.print("Remember devices: ");
   for (int i = 0; i < MAX_DEVICES; i++) {
     Serial.print(EEPROM.read(i));
@@ -118,7 +140,7 @@ void loop() {
   // WORK STATE // works like a client: send request get response
   else {
     Serial.println("WORK STATE");
-    int position = hasSMS();
+    int position = findSMS(SMS_UNREAD);
     if (position) {
       Serial.println("----------====<<<<< GET SMS >>>>>====----------");
 
@@ -148,8 +170,8 @@ void loop() {
   }
 }
 
-int hasSMS() {
-  return gsm_sms.IsSMSPresent(SMS_UNREAD);
+int findSMS(byte required_status) {
+  return gsm_sms.IsSMSPresent(required_status);
 }
 
 void getSMS(int position, char *phone, char* sms_text) {
@@ -157,7 +179,12 @@ void getSMS(int position, char *phone, char* sms_text) {
     gsm_sms.GetSMS((byte)position, phone, sms_text, SMS_LENGTH);
     Serial.println(phone);
     // Delete message from modem memory
-    gsm_sms.DeleteSMS(position);
+    int result_delete = gsm_sms.DeleteSMS(position);
+#ifdef MY_DEBUG
+    if (result_delete > 0) {
+      Serial.println("MESSAGE WAS really DELETED");
+    }
+#endif
     Serial.println("MESSAGE DELETED");
   }
 }
