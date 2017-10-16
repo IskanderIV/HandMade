@@ -35,7 +35,10 @@ public class MyClass {
         nonStaticObject2 = nonStaticObject1;
         println(nonStaticObject2);
         println(nonStaticObject1);
-
+        int x = Integer.MAX_VALUE; //0xafffffff = -1342177281  0xbfffffff = -1073741825
+        // 0x8fffffff = -1879048193  Integer.MAX_VALUE = 0x7fffffff = 2147483647
+        println("x= " + x);
+        println("x= " + (x + x));
         nonStaticObject1.b = 7;
         println(nonStaticObject2);
         println(nonStaticObject1);
