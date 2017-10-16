@@ -593,7 +593,9 @@ char SMSGSM::DeleteAllSMS()
   
   //send "AT+CMGD=XY" - where XY = position
   gsm.SimpleWrite(F("AT+CMGD="));
-  gsm.SimpleWriteln("\"DEL ALL\"");  
+  gsm.SimpleWrite(1);  
+  gsm.SimpleWrite(",");  
+  gsm.SimpleWriteln(4);  
 
 
   // 5000 msec. for initial comm tmout
