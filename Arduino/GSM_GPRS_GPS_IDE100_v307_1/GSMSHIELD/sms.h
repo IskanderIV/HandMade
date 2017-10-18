@@ -16,6 +16,7 @@ class SMSGSM
                           byte first_authorized_pos, byte last_authorized_pos);
     char DeleteSMS(byte position);
 	char DeleteAllSMS();
+	char DeleteReadedAndSendedSMS();
 };
 
 #endif

@@ -224,10 +224,15 @@ char SMSGSM::IsSMSPresent(byte required_status)
         p_char = strchr((char *)gsm.comm_buf,':');
         if (p_char != NULL) {
           ret_val = atoi(p_char+1);
+		  Serial.println("In LIBRARY p_char after finding sms - ");
+		Serial.println(p_char);
+		Serial.print("ret_val = ");
+		Serial.println((int) ret_val);
         }
       }
       else {
         // other response like OK or ERROR
+		Serial.println("other response like OK or ERROR");
         ret_val = 0;
       }
 
@@ -592,10 +597,62 @@ char SMSGSM::DeleteAllSMS()
   ret_val = 0; // not deleted yet
   
   //send "AT+CMGD=XY" - where XY = position
+  gsm.SimpleWrite(F("AT+CMGD=\"DEL ALL\""));
+  //gsm.SimpleWrite(1);  
+  //gsm.SimpleWrite(",");  
+  //gsm.SimpleWriteln(F("DEL ALL"));  
+
+
+  // 5000 msec. for initial comm tmout
+  // 20 msec. for inter character timeout
+  switch (gsm.WaitResp(5000, 50, "OK")) {
+    case RX_TMOUT_ERR:
+      // response was not received in specific time
+      ret_val = -2;
+      break;
+
+    case RX_FINISHED_STR_RECV:
+      // OK was received => SMS deleted
+      ret_val = 1;
+      break;
+
+    case RX_FINISHED_STR_NOT_RECV:
+      // other response: e.g. ERROR => SMS was not deleted
+      ret_val = 0; 
+      break;
+  }
+
+  gsm.SetCommLineStatus(CLS_FREE);
+  return (ret_val);
+}
+/**********************************************************
+Method deletes Readed And Sended SMS from memory
+
+return: 
+        ERROR ret. val:
+        ---------------
+        -1 - comm. line to the GSM module is not free
+        -2 - GSM module didn't answer in timeout
+
+        OK ret val:
+        -----------
+        0 - SMS was not deleted
+        1 - SMS was deleted
+**********************************************************/
+char SMSGSM::DeleteReadedAndSendedSMS() 
+{
+  char ret_val = -1;
+
+  //if (position == 0) return (-3);
+  if (CLS_FREE != gsm.GetCommLineStatus()) return (ret_val);
+  gsm.SetCommLineStatus(CLS_ATCMD);
+  ret_val = 0; // not deleted yet
+  
+  //send "AT+CMGD=XY" - where XY = position
   gsm.SimpleWrite(F("AT+CMGD="));
   gsm.SimpleWrite(1);  
   gsm.SimpleWrite(",");  
-  gsm.SimpleWriteln(4);  
+  gsm.SimpleWriteln(3);  
 
 
   // 5000 msec. for initial comm tmout
