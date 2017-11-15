@@ -7,7 +7,29 @@
   <version>1.0-SNAPSHOT</version>
   <name>cleverhauseServer Maven Webapp</name>
   <url>http://maven.apache.org</url>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <spring.version>4.3.12</spring.version>
+  </properties>
+
   <dependencies>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>SpringVersion</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.16.10</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -17,5 +39,15 @@
   </dependencies>
   <build>
     <finalName>cleverhauseServer</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>
