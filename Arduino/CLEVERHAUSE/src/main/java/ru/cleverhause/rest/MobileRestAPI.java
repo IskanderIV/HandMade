@@ -10,6 +10,5 @@ import org.springframework.web.bind.annotation.RestController;
  * Created by Alexandr on 15.11.2017.
  */
 @RestController
-@RequestMapping(value="/")
 public class MobileRestAPI {
 }

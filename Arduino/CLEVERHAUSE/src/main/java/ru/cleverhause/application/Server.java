@@ -7,4 +7,5 @@ package ru.cleverhause.application;
  * @date 11/16/2017.
  */
 public class Server {
+    
 }
