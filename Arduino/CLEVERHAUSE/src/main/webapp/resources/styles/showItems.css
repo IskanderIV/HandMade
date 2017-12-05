@@ -1,0 +1,17 @@
+body {background-color: #99FF66;background-image: url(http://www.topglobus.ru/fotoalbum/pozadi/galerie/107.jpg);}
+table, th, td
+{
+border-style:solid;
+border-width:1px;
+border-collapse:collapse;
+padding:2px;
+}
+th 
+{
+height:28px;
+background-color:#e0e0e0;
+color:black;
+border-color:black;
+}
+tr:nth-child(2n) {background: grey}
+tr:nth-child(2n+1) {background: white}

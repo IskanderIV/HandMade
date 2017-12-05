@@ -1,14 +1,19 @@
 package ru.cleverhause.rest;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Created by Alexandr on 15.11.2017.
  */
-@RestController
+@Controller
+@RequestMapping(value = "/mobile")
 public class MobileRestAPI {
+
+    @RequestMapping(value = "/{userName}", method = RequestMethod.GET)
+    public String mobileConnect(@PathVariable String userName, Model model) {
+        model.addAttribute("userName", userName);
+        return "redirect:/home";
+    }
 }
